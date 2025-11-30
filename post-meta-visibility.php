@@ -1,8 +1,8 @@
 ﻿<?php
 /*
 Plugin Name: مدیریت نمایش متا و دیدگاه
-Description: کنترل نمایش نویسنده، تاریخ و زمان نوشته و همچنین کنترل نمایش متای دیدگاه (نام، تاریخ، ساعت و لینک‌ها) بر اساس هر پست‌تایپ.
-Version: 1.6
+Description: کنترل نمایش نویسنده، تاریخ و ساعت نوشته و همچنین کنترل نمایش متای دیدگاه (نام، تاریخ، ساعت و لینک‌ها) بر اساس هر پست‌تایپ.
+Version: 1.7
 Author: mreza
 Text Domain: mreza-post-meta
 Author URI: https://uhostco.ir
@@ -119,8 +119,9 @@ function pmv_filter_comment_author($author, $comment_id, $comment = null)
 }
 add_filter('get_comment_author', 'pmv_filter_comment_author', 10, 3);
 
-function pmv_filter_comment_author_link($link, $author, $comment_id, $comment)
+function pmv_filter_comment_author_link($link, $author, $comment_id)
 {
+    $comment = get_comment($comment_id);
     $settings = pmv_get_comment_meta_settings($comment);
     if (!$settings || $settings['show_author'] !== '1') {
         return '';
@@ -152,7 +153,8 @@ add_filter('get_comment_date', 'pmv_filter_comment_date', 10, 3);
 
 function pmv_filter_comment_time($time, $format, $gmt, $comment_id, $translate)
 {
-    $comment = get_comment($comment_id);
+    // در فیلتر get_comment_time آرگومان چهارم $translate است و آرگومان پنجم $comment
+    $comment = $translate;
     $settings = pmv_get_comment_meta_settings($comment);
     if (!$settings || $settings['show_time'] !== '1') {
         return '';
@@ -185,7 +187,7 @@ add_filter('get_comment_link', 'pmv_filter_comment_link', 10, 4);
 // حذف اتصال «در/at» بین تاریخ و ساعت تا در صورت خالی بودن یکی از آن‌ها متن زائد باقی نماند.
 function pmv_strip_comment_datetime_connector($translated_text, $text, $domain)
 {
-    if ($text === '%1$s در %2$s' || $text === '%1$s at %2$s') {
+    if ($domain === 'default' && ($text === '%1$s در %2$s' || $text === '%1$s at %2$s')) {
         return '%1$s %2$s';
     }
     return $translated_text;
